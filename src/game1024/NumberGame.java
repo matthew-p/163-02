@@ -3,12 +3,15 @@ package game1024;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.Stack;
 
 public class NumberGame implements NumberSlider {
 
     private int[][] board;
     private int wV;
     private GameStatus status;
+    private Stack<int[][]> undos;
+    private Stack<int[][]> redos;
     
     public NumberGame() {
         board = new int[4][4];
@@ -114,8 +117,13 @@ public class NumberGame implements NumberSlider {
 
     @Override
     public void undo() {
-        // TODO Auto-generated method stub
-
+        redos.push(board);
+        board = undos.pop();
+    }
+    
+    public void redo() {
+        undos.push(board);
+        board = redos.pop();
     }
 
 }
