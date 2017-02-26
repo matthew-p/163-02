@@ -9,21 +9,23 @@ import java.util.Stack;
 public class NumberGame implements NumberSlider {
 
     private int[][] board;
-    private int wV;
+    private int winValue;
     private GameStatus status;
     private Stack<int[][]> undos;
     private Stack<int[][]> redos;
     
     public NumberGame() {
         board = new int[4][4];
-        wV = 1024;
+        winValue = 1024;
         status = GameStatus.IN_PROGRESS;
+        undos = new Stack<int[][]>();
+        redos = new Stack<int[][]>();
     }
     
     @Override
-    public void resizeBoard(int height, int width, int winningValue) {
+    public void resizeBoard(int height, int width, int winValue) {
         board = new int [height][width];
-        wV = winningValue;
+        this.winValue = winValue;
     }
 
     @Override
@@ -60,64 +62,142 @@ public class NumberGame implements NumberSlider {
         board[c.row][c.column] = newCellVal();
         return null;
     }
-
-    private int[] rowCompact(int length, Queue<Integer> q, int iterator) {
-        
-        int[] nRow = new int[length];
-        int counter = iterator < 0 ? length - 1 : 0;
-
-        while (!q.isEmpty()) {
-            int cur = q.remove();
-            if (q.isEmpty()) {
-                nRow[counter] = cur;
-            } else if (cur == q.element()) {
-                int next = q.remove();
-                nRow[counter] = cur + next;
-                counter = counter + iterator;
-            } else {
-                nRow[counter] = cur;
-                counter = counter + iterator;
-            } 
+    
+    private void printBoard(int[][] b) {
+        System.out.println("Board: ");
+        for (int r = 0; r < b.length; r++){
+            for (int c = 0; c < b[r].length; c++) {
+                System.out.print(b[r][c] + " ");
+            }
+            System.out.println("");
         }
-        return nRow;
     }
     
-    private boolean rowCompact(int length, Queue<Integer> q, int iterator, int r, boolean cng) {
+    private class Empties {
+        private int max;
+        private int min;
+        private int rOrCIndex;
+        private boolean isRow;
+        
+        
+        public Empties(int max, int min, int rOrCIndex, boolean isRow) {
+            this.min = min;
+            this.max = max;
+            this.rOrCIndex = rOrCIndex;
+            this.isRow = isRow;
+        }
+        
+        public Cell randomCell() {
+            int rnd = (new Random()).nextInt((max - min) + 1) + min;
+            if (isRow) {
+                return new Cell(rOrCIndex, rnd, newCellVal());
+            } else {
+                return new Cell(rnd, rOrCIndex, newCellVal());
+            }
+        }
+    }
+    
+    private boolean rowCompact(int length, Queue<Integer> q, int iterator, int r, boolean cng, int[][] nBoard, LinkedList<Empties> eR) {
         
         int counter = iterator < 0 ? length - 1 : 0;
+        if (q.isEmpty()) {
+         // add to the list of empty regions in columns
+            eR.add(new Empties(length - 1, 0, r, true));
+        }
 
         while (!q.isEmpty()) {
             int cur = q.remove();
             if (q.isEmpty()) {
-                board[r][counter] = cur;
+                nBoard[r][counter] = cur;
+
+                if (nBoard[r][counter] != board[r][counter]) {
+                    cng = true;
+                }
+                // add to the list of empty regions in columns
+                if (iterator < 0 && counter > 0) {
+                    eR.add(new Empties(counter -1, 0, r, true));
+                } else if (counter + 1 <= length - 1) {
+                    eR.add(new Empties(length - 1, counter + 1, r, true));
+                }
+                
             } else if (cur == q.element()) {
+                // TODO this breaks empties
                 int next = q.remove();
-                board[r][counter] = cur + next;
+                nBoard[r][counter] = cur + next;
+                if (nBoard[r][counter] != board[r][counter]) {
+                    cng = true;
+                }
+             // add to the list of empty regions in columns
+                if (q.isEmpty()) {
+                    if (iterator < 0 && counter > 0) {
+                        eR.add(new Empties(counter - 1, 0, r, true));
+                    } else if (counter + 1 <= length - 1) {
+                        eR.add(new Empties(length - 1, counter + 1, r, true));
+                    }
+                }
+                
                 counter = counter + iterator;
-                cng = true;
+                
             } else {
-                board[r][counter] = cur;
+                nBoard[r][counter] = cur;
+                if (nBoard[r][counter] != board[r][counter]) {
+                    cng = true;
+                }
                 counter = counter + iterator;
             } 
         }
         return cng;
     }
     
-    private boolean colCompact(int length, Queue<Integer> q, int iterator, int col,  boolean cng) {
+    private boolean colCompact(int length, Queue<Integer> q, int iterator, int col,  boolean cng, int[][] nBoard, LinkedList<Empties> eR) {
 
         int counter = iterator < 0 ? length - 1 : 0;
+        if (q.isEmpty()) {
+           // add to the list of empty regions in columns
+           eR.add(new Empties(length - 1, 0, col, false));
+       }
 
         while (!q.isEmpty()) {
             int cur = q.remove();
             if (q.isEmpty()) {
-                board[counter][col] = cur;
+                nBoard[counter][col] = cur;
+                
+                if (nBoard[counter][col] != board[counter][col]) {
+                    cng = true;
+                }
+                
+                // add to the list of empty regions in columns
+                if (iterator < 0 && counter > 0) {
+                    eR.add(new Empties(counter -1, 0, col, false));
+                } else if (counter + 1 <= length - 1) {
+                    eR.add(new Empties(length - 1, counter + 1, col, false));
+                }
             } else if (cur == q.element()) {
                 int next = q.remove();
-                board[counter][col] = cur + next;
+                nBoard[counter][col] = cur + next;
+                
+                if (nBoard[counter][col] != board[counter][col]) {
+                    cng = true;
+                }
+                
+             // add to the list of empty regions in columns
+                if (q.isEmpty()) {
+                    if (iterator < 0 && counter > 0) {
+                        eR.add(new Empties(counter - 1, 0, col, false));
+                    } else if (counter + 1 <= length - 1) {
+                        eR.add(new Empties(length - 1, counter + 1, col, false));
+                    }
+                }
+                
                 counter = counter + iterator;
-                cng = true;
+                
             } else {
-                board[counter][col] = cur;
+                nBoard[counter][col] = cur;
+                
+                if (nBoard[counter][col] != board[counter][col]) {
+                    cng = true;
+                }
+                
                 counter = counter + iterator;
             } 
         }
@@ -144,67 +224,88 @@ public class NumberGame implements NumberSlider {
         // main class board value to new board holder
         // if no empty cells, no board state change, & no winning move
         // terminate game 
+        
+        printBoard(board);
           
         boolean cng = false;
         
+        LinkedList<Empties> emptyRegion = new LinkedList<Empties>();
+        
         int[][] newBoard = new int[board.length][board[0].length];
         
-        if (dir == SlideDirection.RIGHT) {
+        if (dir == SlideDirection.RIGHT || dir == SlideDirection.LEFT) {
             for (int r = 0; r < board.length; r++) {
-                Queue<Integer> q = new LinkedList<Integer>(); 
-                for (int c = board[r].length - 1; c >= 0; c--) {
-                    if (board[r][c] != 0) {
-                        q.add(board[r][c]);
-                        board[r][c] = 0;
+                Queue<Integer> q = new LinkedList<Integer>();
+                
+                if (dir == SlideDirection.RIGHT) {
+                    for (int c = board[r].length - 1; c >= 0; c--) {
+                        if (board[r][c] != 0) {
+                            q.add(board[r][c]);
+                        }
                     }
+                    cng = rowCompact(board[r].length, q, -1, r, cng, newBoard, emptyRegion);
                 }
-                if (board[r].length > q.size())
-                cng = rowCompact(board[r].length, q, -1, r, cng);
-            }
-        
-
-        }
-        if (dir == SlideDirection.LEFT) {
-            for (int r = 0; r < board.length; r++) {
-                Queue<Integer> q = new LinkedList<Integer>(); 
-                for (int c = 0; c < board[r].length; c++) {
-                    if (board[r][c] != 0) {
-                        q.add(board[r][c]);
-                        board[r][c] = 0;
+                else { // Left
+                    for (int c = 0; c < board[r].length; c++) {
+                        if (board[r][c] != 0) {
+                            q.add(board[r][c]);
+                        }
                     }
+                    cng = rowCompact(board[r].length, q, 1, r, cng, newBoard, emptyRegion);
                 }
-                cng = rowCompact(board[r].length, q, 1, r, cng);
             }
-        }
-        
-        if (dir == SlideDirection.UP) {
+        } else {
             for (int c = 0; c < board[0].length; c++) {
                 Queue<Integer> q = new LinkedList<Integer>();
-                for (int r = 0; r < board.length; r++) {
-                    if (board[r][c] != 0) {
-                        q.add(board[r][c]);
-                        board[r][c] = 0;
+                if (dir == SlideDirection.UP) {
+                    for (int r = 0; r < board.length; r++) {
+                        if (board[r][c] != 0) {
+                            q.add(board[r][c]);
+                        }
                     }
+                    cng = colCompact(board.length, q, 1, c, cng, newBoard, emptyRegion);
+                } else { // Down
+                    for (int r = board.length - 1; r >= 0; r--) {
+                        if (board[r][c] != 0) {
+                            q.add(board[r][c]);
+                        }
+                    }
+                    cng = colCompact(board.length, q, -1, c, cng, newBoard, emptyRegion);
                 }
-                cng = colCompact(board[0].length, q, 1, c, cng);
             }
         }
+        System.out.println("emptyRegion.size(): " + emptyRegion.size());
         
-        if (dir == SlideDirection.DOWN) {
-            for (int c = 0; c < board[0].length; c++) {
-                Queue<Integer> q = new LinkedList<Integer>();
-                for (int r = board.length - 1; r >= 0; r--) {
-                    if (board[r][c] != 0) {
-                        q.add(board[r][c]);
-                        board[r][c] = 0;
-                    }
-                }
-                cng = colCompact(board[0].length, q, -1, c, cng);
-            }
+        if (emptyRegion.size() > 1) {
+            
+            Cell n = emptyRegion.get(
+                        (new Random()).nextInt(emptyRegion.size()))
+                        .randomCell();
+            System.out.println("empty cell row: " + n.row + " col: " + n.column + " val: " + n.value);
+            
+            newBoard[n.row][n.column] = n.value;
+            
+            
+            //cng = true;
+        } else if (emptyRegion.size() == 1) {
+            
+            Cell n = emptyRegion.get(0).randomCell();
+            System.out.println("empty cell row: " + n.row + " col: " + n.column + " val: " + n.value);
+            
+            newBoard[n.row][n.column] = n.value;
+            
+            
+           // cng = true;
         }
         
-        placeRandomValue();
-        return true;
+        if (cng) {
+            undos.push(board);
+            board = newBoard;
+        }
+        // placeRandomValue();
+        printBoard(board);
+        System.out.println("did board swipe change board state? " + cng +  "\n");
+        return cng;
     }
     
     
