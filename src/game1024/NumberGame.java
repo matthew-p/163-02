@@ -82,60 +82,72 @@ public class NumberGame implements NumberSlider {
         return nRow;
     }
     
+    private boolean rowCompact(int length, Queue<Integer> q, int iterator, int r, boolean cng) {
+        
+        int counter = iterator < 0 ? length - 1 : 0;
+
+        while (!q.isEmpty()) {
+            int cur = q.remove();
+            if (q.isEmpty()) {
+                board[r][counter] = cur;
+            } else if (cur == q.element()) {
+                int next = q.remove();
+                board[r][counter] = cur + next;
+                counter = counter + iterator;
+                cng = true;
+            } else {
+                board[r][counter] = cur;
+                counter = counter + iterator;
+            } 
+        }
+        return cng;
+    }
+    
+    private boolean colCompact(int length, Queue<Integer> q, int iterator, int col,  boolean cng) {
+
+        int counter = iterator < 0 ? length - 1 : 0;
+
+        while (!q.isEmpty()) {
+            int cur = q.remove();
+            if (q.isEmpty()) {
+                board[counter][col] = cur;
+            } else if (cur == q.element()) {
+                int next = q.remove();
+                board[counter][col] = cur + next;
+                counter = counter + iterator;
+                cng = true;
+            } else {
+                board[counter][col] = cur;
+                counter = counter + iterator;
+            } 
+        }
+        return cng;
+    }
+    
     @Override
     public boolean slide(SlideDirection dir) {
-        // TODO Auto-generated method stub
-        /*
-         * start at the 'wall', the direction-most array cell & work 
-         * backward, so if eastward, begin in last cell of row array 
-         * looping down to zero; but if westward, begin with zero to
-         * max array length. 
-         * Use three var pointers, holding index 
-         * values:  
-         * most recent un-merged cell (if any),
-         * direction-most empty cell (if any),
-         * current looping index
-         * 
-         * store first index as empty or unmerged, depending, walk one
-         * over, if new cell is empty & most recent unmerged is null, 
-         * set that var to position index & increment loop. If value,
-         * if value is mergable with most recent un-merged, add to 
-         * most recent unmerged's cell's value. set most recent unmerged
-         * to empty & the current i cell's value to empty. If unmerged 
-         * is unmergeable with i cell value (or empty / wall), 
-         * update most empty to value, set i cell to empty. Increment loop.    
-         * 
-         */
         
-        /*
-         * feb 14th
-         * make a new holder array with x variable to track 
-         * its own pointer (uses same row as main board loop), 
-         * 
-         * iterate over each row of board,
-         * main board variable holds most recent cell with a value,
-         * beginning null, fill it with first value found,
-         * when iterator hits new cell with a value, 
-         * if values == the var value, place double this value in the cell 
-         * of the reciever array's x pointer, if != place 
-         * value in reciever array's pointer cell, and increment 
-         * that pointer. Also update main board holder to current 
-         * cell. 
-         * 
-         * reciever doesn't have to be the entire board, 
-         * just the active row. Rebuilding the board one row by one
-         * as you iterate over them. 1 dimensional holder array 
-         * 
-         * at end, assign new reciever board to main board var
-         */
-        
-        /*
-         * feb 15th do this as a queue instead of a holding array
-         */
-        
-        // do everything as doublely linked list? empty cells don't exist???
-        
+        // TODO this is bad, must make a new holder board array, 
+        // that you will push all the queue'd cell values onto to,
+        // checking each one against the original board value for 
+        // that cell to see if any change, until/unless change==true is 
+        // set, then use || to short curcuit that evaluation maybe.
+        // also, make a LList that will hold a struct item
+        // holding its row or col value, its starting empty cell #,
+        // it's ending empty cell # (zero or length of the board row/col),
+        // and a method to return a random value from its range.
+        // so you can easily pull a random value first from the LList
+        // length, then from that item in the list's struct to 
+        // place the new cell. 
+        // If any change, push original board onto the undo stack, 
+        // & update return value to true, & add
+        // main class board value to new board holder
+        // if no empty cells, no board state change, & no winning move
+        // terminate game 
+          
         boolean cng = false;
+        
+        int[][] newBoard = new int[board.length][board[0].length];
         
         if (dir == SlideDirection.RIGHT) {
             for (int r = 0; r < board.length; r++) {
@@ -143,139 +155,14 @@ public class NumberGame implements NumberSlider {
                 for (int c = board[r].length - 1; c >= 0; c--) {
                     if (board[r][c] != 0) {
                         q.add(board[r][c]);
+                        board[r][c] = 0;
                     }
                 }
-                /*
-                 * if the removed queue value and the queue.element() peek
-                 * are equal, remove the peeked value, combine them, 
-                 * assign them to the array at index counter value, 
-                 * increment index counter.
-                 * else if the removed value != peeked val,
-                 * assign the removed val to the array[counter]
-                 * and increment the counter.
-                 * 
-                 *
-                int[] nRow = new int[board[r].length];
-                int counter = board[r].length - 1;
-
-                while (!q.isEmpty()) {
-                    int cur = q.remove();
-                    if (q.isEmpty()) {
-                        nRow[counter] = cur;
-                    } else if (cur == q.element()) {
-                        int next = q.remove();
-                        nRow[counter] = cur + next;
-                        counter -= 1;
-                    } else {
-                        nRow[counter] = cur;
-                        counter -= 1;
-                    } 
-                }
-                
-                board[r] = nRow;
-                */
-                board[r] = rowCompact(board[r].length, q, -1);
+                if (board[r].length > q.size())
+                cng = rowCompact(board[r].length, q, -1, r, cng);
             }
         
-        /*
-        if (dir == SlideDirection.RIGHT) {
-            
-            for (int r = 0; r < board.length; r++) {
-                int[] rRow = new int[board[r].length];
-                int rRowPointer = board[r].length - 1;
-                
-                Cell lastCV = null;
-                
-                for (int c = board[r].length - 1; c >= 0; c--) {
-                    if (c == 0) {
-                        if (board[r][c] != 0) {
-                            if (lastCV != null) {
-                                if (board[r][c] == lastCV.value) {
-                                    rRow[rRowPointer] = lastCV.value + board[r][c];
-                                } else {
-                                    rRow[rRowPointer] = lastCV.value;
-                                    rRowPointer -= 1;
-                                    rRow[rRowPointer] = board[r][c];
-                                }
-                                
-                            } else {
-                                rRow[rRowPointer] = board[r][c];
-                            }
 
-                        }
-                        
-                    } else if (board[r][c] != 0) {
-                        if (lastCV == null) {
-                            lastCV = new Cell(r,c, board[r][c]);
-                        } else {
-                            if (lastCV.value == board[r][c]) {
-                                rRow[rRowPointer] = board[r][c] + lastCV.value;
-                                lastCV = null;
-                                rRowPointer -= 1;
-                                cng = true;
-                            } else {
-                                rRow[rRowPointer] = lastCV.value;
-                                rRowPointer -= 1;
-                                lastCV = new Cell(r,c, board[r][c]);
-                            }
-                        }
-                    }
-                }
-                board[r] = rRow;
-            }
-            */
-        
-            
-            
-            /* original, too complicated, mutating array in place
-            for (int r = 0; r < board.length; r++) {
-                Cell firstEmpty = null;
-                Cell lastUnmerged = null;
-                for (int c = board[0].length - 1; c >= 0; c--) {
-                    // if no empty cell stored, & this cell is empty,
-                    // store it to first empty cell 
-                        
-                    // if current has a value,  
-                    if (board[r][c] != 0) {
-                        if (lastUnmerged != null) {
-                            if (lastUnmerged.value == board[r][c]){
-                                board[lastUnmerged.row][lastUnmerged.column] = lastUnmerged.value + board[r][c];
-                                lastUnmerged = null;
-                                board[r][c] = 0;
-                                cng = true;
-                               // continue;
-                            } else if (firstEmpty != null) {
-                                board[firstEmpty.row][firstEmpty.column] = board[r][c];
-                                lastUnmerged = new Cell(firstEmpty.row, firstEmpty.column, board[r][c]);
-                                firstEmpty = new Cell(firstEmpty.row, firstEmpty.column - 1, 0);
-                                board[r][c] = 0;
-                                cng = true;
-                            } else {
-                                lastUnmerged = new Cell(r,c,board[r][c]);
-                            }
-                            
-                        } else {
-                            if (firstEmpty != null) {
-                                board[firstEmpty.row][firstEmpty.column] = board[r][c];
-                                lastUnmerged = new Cell(firstEmpty.row, firstEmpty.column, board[r][c]);
-                                firstEmpty = new Cell(firstEmpty.row, firstEmpty.column - 1, 0);
-                                board[r][c] = 0;  
-                                cng = true;
-                            } else {
-                                lastUnmerged = new Cell(r,c, board[r][c]);
-                            }
-                        }
-                    } else {
-                        if (firstEmpty == null) {
-                            firstEmpty = new Cell(r, c, board[r][c]);
-                        }    
-                        
-                    }        
-                    
-                }
-            }
-            */
-            
         }
         if (dir == SlideDirection.LEFT) {
             for (int r = 0; r < board.length; r++) {
@@ -283,9 +170,10 @@ public class NumberGame implements NumberSlider {
                 for (int c = 0; c < board[r].length; c++) {
                     if (board[r][c] != 0) {
                         q.add(board[r][c]);
+                        board[r][c] = 0;
                     }
                 }
-                board[r] = rowCompact(board[r].length, q, 1);
+                cng = rowCompact(board[r].length, q, 1, r, cng);
             }
         }
         
@@ -298,15 +186,12 @@ public class NumberGame implements NumberSlider {
                         board[r][c] = 0;
                     }
                 }
-                colCompact(c, board[0].length, q, 1);
+                cng = colCompact(board[0].length, q, 1, c, cng);
             }
         }
         
-        //TODO back fill cells that should be empty 
-        // after queue exhausted
-        
         if (dir == SlideDirection.DOWN) {
-            for (int c = board[0].length -1; c >= 0; c--) {
+            for (int c = 0; c < board[0].length; c++) {
                 Queue<Integer> q = new LinkedList<Integer>();
                 for (int r = board.length - 1; r >= 0; r--) {
                     if (board[r][c] != 0) {
@@ -314,7 +199,7 @@ public class NumberGame implements NumberSlider {
                         board[r][c] = 0;
                     }
                 }
-                colCompact(c, board[0].length, q, -1);
+                cng = colCompact(board[0].length, q, -1, c, cng);
             }
         }
         
@@ -322,28 +207,7 @@ public class NumberGame implements NumberSlider {
         return true;
     }
     
-    private void colCompact(int col, int length, Queue<Integer> q, int iterator) {
-
-        int counter = iterator < 0 ? length - 1 : 0;
-
-        while (!q.isEmpty()) {
-            int cur = q.remove();
-            if (q.isEmpty()) {
-                //nRow[counter] = cur;
-                board[counter][col] = cur;
-            } else if (cur == q.element()) {
-                int next = q.remove();
-                // nRow[counter] = cur + next;
-                board[counter][col] = cur + next;
-                counter = counter + iterator;
-            } else {
-                //nRow[counter] = cur;
-                board[counter][col] = cur;
-                counter = counter + iterator;
-            } 
-        }
-        
-    }
+    
     
     public LinkedList<Cell> getEmptyTiles() {
         LinkedList<Cell> rtn = new LinkedList<Cell>();

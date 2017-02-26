@@ -348,7 +348,7 @@ public class TenTwentyFourTester {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test//(timeout = 5000)
     public void slidingThatMovesTilesToOppositeSide()
     {
         int[][] vals = new int[NROWS][NCOLS];
