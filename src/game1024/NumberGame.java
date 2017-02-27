@@ -22,6 +22,30 @@ public class NumberGame implements NumberSlider {
         redos = new Stack<int[][]>();
     }
     
+    public NumberGame(int length) {
+        board = new int[length][length];
+        this.winValue = 1024;
+        status = GameStatus.IN_PROGRESS;
+        undos = new Stack<int[][]>();
+        redos = new Stack<int[][]>();
+    }
+    
+    public NumberGame(int rowLength, int colLength) {
+        board = new int[rowLength][colLength];
+        this.winValue = 1024;
+        status = GameStatus.IN_PROGRESS;
+        undos = new Stack<int[][]>();
+        redos = new Stack<int[][]>();
+    }
+    
+    public NumberGame(int rowLength, int colLength, int winValue) {
+        board = new int[rowLength][colLength];
+        this.winValue = winValue;
+        status = GameStatus.IN_PROGRESS;
+        undos = new Stack<int[][]>();
+        redos = new Stack<int[][]>();
+    }
+    
     @Override
     public void resizeBoard(int height, int width, int winValue) {
         board = new int [height][width];
@@ -31,6 +55,7 @@ public class NumberGame implements NumberSlider {
     @Override
     public void reset() {
         board = new int[board.length][board[0].length];
+        undos = new Stack<int[][]>();
         placeRandomValue();
         placeRandomValue();
         status = GameStatus.IN_PROGRESS;
@@ -56,11 +81,10 @@ public class NumberGame implements NumberSlider {
     
     @Override
     public Cell placeRandomValue() {
-        // not clear to me why this needs to return a Cell
         LinkedList<Cell> empty = getEmptyTiles();
         Cell c = empty.get(new Random().nextInt(empty.size()));
         board[c.row][c.column] = newCellVal();
-        return null;
+        return c;
     }
     
     private void printBoard(int[][] b) {
@@ -121,13 +145,12 @@ public class NumberGame implements NumberSlider {
                 }
                 
             } else if (cur == q.element()) {
-                // TODO this breaks empties
                 int next = q.remove();
                 nBoard[r][counter] = cur + next;
                 if (nBoard[r][counter] != board[r][counter]) {
                     cng = true;
                 }
-             // add to the list of empty regions in columns
+                // add to the list of empty regions in columns
                 if (q.isEmpty()) {
                     if (iterator < 0 && counter > 0) {
                         eR.add(new Empties(counter - 1, 0, r, true));
@@ -207,17 +230,16 @@ public class NumberGame implements NumberSlider {
     @Override
     public boolean slide(SlideDirection dir) {
         
-        // TODO this is bad, must make a new holder board array, 
+        // make a new holder board array, 
         // that you will push all the queue'd cell values onto to,
         // checking each one against the original board value for 
-        // that cell to see if any change, until/unless change==true is 
-        // set, then use || to short curcuit that evaluation maybe.
-        // also, make a LList that will hold a struct item
+        // that cell to see if any change,
+        // also, make a LList that will hold a item
         // holding its row or col value, its starting empty cell #,
         // it's ending empty cell # (zero or length of the board row/col),
         // and a method to return a random value from its range.
         // so you can easily pull a random value first from the LList
-        // length, then from that item in the list's struct to 
+        // length, then from that item in the list's item to 
         // place the new cell. 
         // If any change, push original board onto the undo stack, 
         // & update return value to true, & add
@@ -284,9 +306,6 @@ public class NumberGame implements NumberSlider {
             System.out.println("empty cell row: " + n.row + " col: " + n.column + " val: " + n.value);
             
             newBoard[n.row][n.column] = n.value;
-            
-            
-            //cng = true;
         } else if (emptyRegion.size() == 1) {
             
             Cell n = emptyRegion.get(0).randomCell();
@@ -294,20 +313,46 @@ public class NumberGame implements NumberSlider {
             
             newBoard[n.row][n.column] = n.value;
             
-            
-           // cng = true;
+            if (status != GameStatus.USER_WON && !anyMoves(newBoard)) {
+                status = GameStatus.USER_LOST;
+            }
+        } else {
+            if (status != GameStatus.USER_WON && !anyMoves(newBoard)) {
+                status = GameStatus.USER_LOST;
+            }
         }
+        
         
         if (cng) {
             undos.push(board);
             board = newBoard;
         }
-        // placeRandomValue();
         printBoard(board);
         System.out.println("did board swipe change board state? " + cng +  "\n");
         return cng;
     }
     
+    
+    private boolean anyMoves(int[][] b) {
+        for (int r = 0; r < b.length; r++) {
+            for (int c = 0; c < b[r].length; c++) {
+                if (b[r][c] == 0) {
+                    return true;
+                }
+                if (r < b.length - 1) {
+                    if (b[r][c] == b[r + 1][c]){
+                        return true;
+                    }
+                }
+                if (c < b[r].length -1) {
+                    if (b[r][c] == b[r][c + 1]) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
     
     
     public LinkedList<Cell> getEmptyTiles() {
@@ -342,23 +387,20 @@ public class NumberGame implements NumberSlider {
 
     @Override
     public GameStatus getStatus() {
+        // the way this is tested makes it necessary
+        // to call a check across the game board
+        // here, outside of any actual gameplay 
+        if (!anyMoves(board)) {
+            status = GameStatus.USER_LOST;
+        }
         return status;
     }
-
-    //TODO check if deep copy or just shallow copy of pointers 
+ 
     // you can use array lists in the undo methods 
     // to store away new arrayList of active cells via getNonEmptyTiles() 
-    // improvement for deltas
-    // save off just the changes
     @Override
     public void undo() {
-        redos.push(board);
         board = undos.pop();
-    }
-    
-    public void redo() {
-        undos.push(board);
-        board = redos.pop();
     }
 
 }
