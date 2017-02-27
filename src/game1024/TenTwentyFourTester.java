@@ -348,7 +348,7 @@ public class TenTwentyFourTester {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test//(timeout = 5000)
     public void slidingThatMovesTilesToOppositeSide()
     {
         int[][] vals = new int[NROWS][NCOLS];
@@ -554,6 +554,37 @@ public class TenTwentyFourTester {
                     gameLogic.getStatus());
         }
 
+    }
+    
+    @Test(timeout = 5000) 
+    public void testUndo() {
+        gameLogic.resizeBoard(4, 4, 1024);
+        gameLogic.setValues(new int[][] {{2,2,2,2},{0,0,0,0},{4,4,4,4},{0,0,0,0}});
+        gameLogic.slide(SlideDirection.RIGHT);
+        gameLogic.slide(SlideDirection.RIGHT);
+        int cellVal = 0;
+        ArrayList<Cell> board = gameLogic.getNonEmptyTiles();
+        for (Cell c : board) {            
+            if (c.column == 3 && c.row == 0) {
+                cellVal = c.value;
+                break;
+            }
+        }
+        assertEquals("0,3 cell value is 8",
+                cellVal,
+                8);
+        gameLogic.undo();
+        gameLogic.undo();
+        board = gameLogic.getNonEmptyTiles();
+        for (Cell c : board) {            
+            if (c.column == 3 && c.row == 0) {
+                cellVal = c.value;
+                break;
+            }
+        }
+        assertEquals("0,3 cell value is 2",
+                cellVal,
+                2);
     }
 
     @Test(timeout = 1000)
