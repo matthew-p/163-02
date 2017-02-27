@@ -50,6 +50,8 @@ public class NumberGame implements NumberSlider {
     public void resizeBoard(int height, int width, int winValue) {
         board = new int [height][width];
         this.winValue = winValue;
+        undos = new Stack<int[][]>();
+        status = GameStatus.IN_PROGRESS;
     }
 
     @Override
@@ -132,6 +134,9 @@ public class NumberGame implements NumberSlider {
         while (!q.isEmpty()) {
             int cur = q.remove();
             if (q.isEmpty()) {
+                if (cur == winValue) {
+                    status = GameStatus.USER_WON;
+                }
                 nBoard[r][counter] = cur;
 
                 if (nBoard[r][counter] != board[r][counter]) {
@@ -146,6 +151,9 @@ public class NumberGame implements NumberSlider {
                 
             } else if (cur == q.element()) {
                 int next = q.remove();
+                if (cur + next == winValue) {
+                    status = GameStatus.USER_WON;
+                }
                 nBoard[r][counter] = cur + next;
                 if (nBoard[r][counter] != board[r][counter]) {
                     cng = true;
@@ -162,6 +170,9 @@ public class NumberGame implements NumberSlider {
                 counter = counter + iterator;
                 
             } else {
+                if (cur == winValue) {
+                    status = GameStatus.USER_WON;
+                }
                 nBoard[r][counter] = cur;
                 if (nBoard[r][counter] != board[r][counter]) {
                     cng = true;
@@ -183,6 +194,9 @@ public class NumberGame implements NumberSlider {
         while (!q.isEmpty()) {
             int cur = q.remove();
             if (q.isEmpty()) {
+                if (cur == winValue) {
+                    status = GameStatus.USER_WON;
+                }
                 nBoard[counter][col] = cur;
                 
                 if (nBoard[counter][col] != board[counter][col]) {
@@ -197,6 +211,10 @@ public class NumberGame implements NumberSlider {
                 }
             } else if (cur == q.element()) {
                 int next = q.remove();
+                
+                if (cur + next == winValue) {
+                    status = GameStatus.USER_WON;
+                }
                 nBoard[counter][col] = cur + next;
                 
                 if (nBoard[counter][col] != board[counter][col]) {
@@ -215,6 +233,9 @@ public class NumberGame implements NumberSlider {
                 counter = counter + iterator;
                 
             } else {
+                if (cur == winValue) {
+                    status = GameStatus.USER_WON;
+                }
                 nBoard[counter][col] = cur;
                 
                 if (nBoard[counter][col] != board[counter][col]) {
