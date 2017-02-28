@@ -68,6 +68,24 @@ public class TenTwentyFourTester {
                 cellVal,
                 2);
     }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void ArgumentExceptionWhenWinningValueIsNotPowerOfTwo() {
+        gameLogic.resizeBoard(4, 4, 7);
+    }
+    
+    @Test(expected=IllegalStateException.class) 
+    public void UndoThrowsIllegalStateExceptionWhenNoUndosPossible() {
+        NumberGame g = new NumberGame();
+        g.undo();
+    }
+    
+    @Test(expected=IllegalStateException.class) 
+    public void PlaceRandomValueThrowsIllegalStateWhenNoEmptySpace() {
+        NumberGame g = new NumberGame(2);
+        g.setValues(new int[][] {{2,2},{2,2}});
+        g.placeRandomValue();
+    }
 
     @Test
     public void resetShouldShowTwoValue()

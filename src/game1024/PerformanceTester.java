@@ -42,7 +42,7 @@ public class PerformanceTester {
             g = new NumberGame(i);
             g.setValues(fullBoardGen(i, 2));
             startTime = System.currentTimeMillis();
-            g.slide(SlideDirection.LEFT);
+            g.slide(SlideDirection.UP);
             endTime = System.currentTimeMillis();
             d = endTime - startTime;
             outcomes.add(new Info(d, i));

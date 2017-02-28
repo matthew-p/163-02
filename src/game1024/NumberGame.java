@@ -12,10 +12,13 @@ import java.util.Stack;
  *
  */
 public class NumberGame implements NumberSlider {
-
+    /** The main Game Board  */
     private int[][] board;
+    /** the winning value */
     private int winValue;
+    /** current status */
     private GameStatus status;
+    /** game history */
     private Stack<int[][]> undos;
     
     /******************************************************************
@@ -111,11 +114,16 @@ public class NumberGame implements NumberSlider {
     
     /******************************************************************/
     @Override
-    public void resizeBoard(int height, int width, int winValue) {
-        board = new int [height][width];
-        this.winValue = winValue;
-        undos = new Stack<int[][]>();
-        status = GameStatus.IN_PROGRESS;
+    public void resizeBoard(int height, int width, int winValue) 
+            throws IllegalArgumentException {
+        if ((winValue & -winValue) == winValue) {
+            board = new int [height][width];
+            this.winValue = winValue;
+            undos = new Stack<int[][]>();
+            status = GameStatus.IN_PROGRESS;
+        } else {
+            throw new IllegalArgumentException("Invalid winning value");
+        }
     }
 
     /******************************************************************/
@@ -131,6 +139,10 @@ public class NumberGame implements NumberSlider {
     /******************************************************************/
     @Override
     public void setValues(int[][] ref) {
+        if (ref.length != board.length || 
+                ref[0].length != board[0].length) {
+            resizeBoard(ref.length, ref[0].length, 0);
+        }
         int rows = ref.length;
         int cols = ref[0].length;
         for (int r = 0; r < rows; r++) {
@@ -142,11 +154,15 @@ public class NumberGame implements NumberSlider {
     
     /******************************************************************/
     @Override
-    public Cell placeRandomValue() {
+    public Cell placeRandomValue() throws IllegalStateException {
         LinkedList<Cell> empty = getEmptyTiles();
-        Cell c = empty.get((new Random()).nextInt(empty.size()));
-        board[c.row][c.column] = newCellVal();
-        return c;
+        if (empty.isEmpty()) {
+            throw new IllegalStateException();
+        } else {
+            Cell c = empty.get((new Random()).nextInt(empty.size()));
+            board[c.row][c.column] = newCellVal();
+            return c;
+        }
     }
     
     /******************************************************************
@@ -187,8 +203,13 @@ public class NumberGame implements NumberSlider {
     }
     /******************************************************************/
     @Override
-    public void undo() {
-        board = undos.pop();
+    public void undo() throws IllegalStateException {
+        if (undos.empty()) {
+            throw new IllegalStateException();
+        } else {
+            board = undos.pop();
+        }
+        
     }
     
     /******************************************************************/
