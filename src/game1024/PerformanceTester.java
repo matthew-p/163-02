@@ -34,7 +34,7 @@ public class PerformanceTester {
         long endTime = 0;
         long d = 0;
         String msgS = "Beginning slide test for side length: ";
-        String msgE = "Slide test complete for side length: ";
+        String msgE = "Slide test complete: ";
         ArrayList<Info> outcomes = new ArrayList<Info>();
         
         for (int i = 5; i < 15000; i = i * 2) {
@@ -54,12 +54,14 @@ public class PerformanceTester {
             Info cur = outcomes.get(i);
 
             System.out.println("Duration for side length " + 
-                                cur.sideLength + ": " + cur.executionTime);
+                                cur.sideLength + ": " + 
+                                cur.executionTime + " ms");
             if (i > 0) {
                 double percent = cur.executionTime * 1.0 / 
                         outcomes.get(i - 1).executionTime;
-                System.out.println("Difference from prior length: " + 
-                                    cur.sideLength + " = " + percent);
+                System.out.print("Difference from prior length: ");
+                System.out.printf("%.1f", percent * 100);
+                System.out.println(" %\n");
             }
         }
     }

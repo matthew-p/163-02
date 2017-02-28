@@ -1,6 +1,5 @@
 package game1024;
 
-
 import org.junit.*;
 
 import game1024.*;
@@ -39,9 +38,12 @@ public class TenTwentyFourTester {
     }
     
     @Test(timeout = 5000) 
-    public void testUndo() {
+    public void UndoShouldRollBackStateWhenUsed() {
         gameLogic.resizeBoard(4, 4, 1024);
-        gameLogic.setValues(new int[][] {{2,2,2,2},{0,0,0,0},{4,4,4,4},{0,0,0,0}});
+        gameLogic.setValues(new int[][] {{2,2,2,2},
+                                         {0,0,0,0},
+                                         {4,4,4,4},
+                                         {0,0,0,0}});
         gameLogic.slide(SlideDirection.RIGHT);
         gameLogic.slide(SlideDirection.RIGHT);
         int cellVal = 0;
@@ -52,9 +54,7 @@ public class TenTwentyFourTester {
                 break;
             }
         }
-        assertEquals("0,3 cell value is 8",
-                cellVal,
-                8);
+        assertEquals("0,3 cell value is 8", cellVal, 8);
         gameLogic.undo();
         gameLogic.undo();
         board = gameLogic.getNonEmptyTiles();
@@ -70,7 +70,7 @@ public class TenTwentyFourTester {
     }
     
     @Test(expected=IllegalArgumentException.class)
-    public void ArgumentExceptionWhenWinningValueIsNotPowerOfTwo() {
+    public void ResizeArgExceptionWhenWinningValueIsNotPowerOfTwo() {
         gameLogic.resizeBoard(4, 4, 7);
     }
     

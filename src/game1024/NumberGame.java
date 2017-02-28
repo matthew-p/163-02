@@ -7,9 +7,11 @@ import java.util.Random;
 import java.util.Stack;
 
 /**
- * Core of the 2014 game, built for CS163, February 2017 
+ * Core of the 2048 (1024) game, built for CS163, February 2017
+ * Built to satisfy a provided spec and suite of tests
+ * that require handling arbitrarily sized boards, 
+ * with random cell values   
  * @author Matthew Pische
- *
  */
 public class NumberGame implements NumberSlider {
     /** The main Game Board  */
@@ -35,7 +37,7 @@ public class NumberGame implements NumberSlider {
     /******************************************************************
      * Takes a single value to set the game board's length and width,
      * win value defaults to 1024
-     * @param length
+     * @param length length of both gameboard sides
      *****************************************************************/
     public NumberGame(int length) {
         board = new int[length][length];
@@ -47,8 +49,8 @@ public class NumberGame implements NumberSlider {
     /******************************************************************
      * Takes different row and column dimensions for the game board,
      * win value defaults to 1024
-     * @param rowLength
-     * @param colLength
+     * @param rowLength height of the gameboard
+     * @param colLength width of the gameboard
      *****************************************************************/
     public NumberGame(int rowLength, int colLength) {
         board = new int[rowLength][colLength];
@@ -59,9 +61,9 @@ public class NumberGame implements NumberSlider {
     
     /******************************************************************
      * Set different board dimensions, and a custom win value
-     * @param rowLength
-     * @param colLength
-     * @param winValue
+     * @param rowLength height of the gameboard
+     * @param colLength width of the gameboard
+     * @param winValue winning score
      *****************************************************************/
     public NumberGame(int rowLength, int colLength, int winValue) {
         board = new int[rowLength][colLength];
@@ -78,9 +80,13 @@ public class NumberGame implements NumberSlider {
      *
      *****************************************************************/
     private class Empties {
-        private int max;
+        /** highest empty cell index */ 
+        private int max; 
+        /** lowest empty cell index */
         private int min;
+        /** the index of the current row or column this represents */
         private int rOrCIndex;
+        /** whether this represents a row or column */
         private boolean isRow;
         
         /***************************************************************
@@ -97,6 +103,7 @@ public class NumberGame implements NumberSlider {
             this.rOrCIndex = rOrCIndex;
             this.isRow = isRow;
         }
+        
         /***************************************************************
          * Creates a new Cell object in one of the available empty 
          * spaces in this object's represented row or column
@@ -513,7 +520,7 @@ public class NumberGame implements NumberSlider {
     
     /******************************************************************
      * Prints a representation of the given gameboard to the terminal
-     * @param b a game board as a 2D array of ints
+     * @param b game board as a 2D array of ints
      *****************************************************************/
     private void printBoard(int[][] b) {
         System.out.println("Board: ");
