@@ -33,43 +33,43 @@ public class PerformanceTester {
      * sliding vertically 
      * @param args
      ******************************************************************/
-    public static void terminalOut() {
-        NumberGame g = new NumberGame(10);
-        long startTime = 0;
-        long endTime = 0;
-        long d = 0;
-        String msgS = "Beginning slide test for side length: ";
-        String msgE = "Slide test complete: ";
-        ArrayList<Info> outcomes = new ArrayList<Info>();
-        
-        for (int i = 5; i < 15000; i = i * 2) {
-            System.out.println(msgS + i);
-            g = new NumberGame(i);
-            g.setValues(fullBoardGen(i, 2));
-            startTime = System.currentTimeMillis();
-            g.slide(SlideDirection.UP);
-            endTime = System.currentTimeMillis();
-            d = endTime - startTime;
-            outcomes.add(new Info(d, i));
-            System.out.println(msgE + i + " duration: " + d + " ms\n");
-        }
-        System.out.println("Summary: \n****************\n");
-        
-        for (int i = 0; i < outcomes.size(); i++) {
-            Info cur = outcomes.get(i);
-
-            System.out.println("Duration for side length " + 
-                                cur.sideLength + ": " + 
-                                cur.executionTime + " ms");
-            if (i > 0) {
-                double percent = cur.executionTime * 1.0 / 
-                        outcomes.get(i - 1).executionTime;
-                System.out.print("Difference from prior length: ");
-                System.out.printf("%.1f", percent * 100);
-                System.out.println(" %\n");
-            }
-        }
-    }
+//    public static void terminalOut() {
+//        NumberGame g = new NumberGame(10);
+//        long startTime = 0;
+//        long endTime = 0;
+//        long d = 0;
+//        String msgS = "Beginning slide test for side length: ";
+//        String msgE = "Slide test complete: ";
+//        ArrayList<Info> outcomes = new ArrayList<Info>();
+//        
+//        for (int i = 5; i < 15000; i = i * 2) {
+//            System.out.println(msgS + i);
+//            g = new NumberGame(i);
+//            g.setValues(fullBoardGen(i, 2));
+//            startTime = System.currentTimeMillis();
+//            g.slide(SlideDirection.UP);
+//            endTime = System.currentTimeMillis();
+//            d = endTime - startTime;
+//            outcomes.add(new Info(d, i));
+//            System.out.println(msgE + i + " duration: " + d + " ms\n");
+//        }
+//        System.out.println("Summary: \n****************\n");
+//        
+//        for (int i = 0; i < outcomes.size(); i++) {
+//            Info cur = outcomes.get(i);
+//
+//            System.out.println("Duration for side length " + 
+//                                cur.sideLength + ": " + 
+//                                cur.executionTime + " ms");
+//            if (i > 0) {
+//                double percent = cur.executionTime * 1.0 / 
+//                        outcomes.get(i - 1).executionTime;
+//                System.out.print("Difference from prior length: ");
+//                System.out.printf("%.1f", percent * 100);
+//                System.out.println(" %\n");
+//            }
+//        }
+//    }
     
     /**
      * Runnning a testing loop outputing the result in milliseconds 
@@ -81,7 +81,8 @@ public class PerformanceTester {
      * more time consuming than horizontal moves
      * @throws FileNotFoundException when it can't find test.csv
      */
-    public static void fileOut(int step, SlideDirection direction) throws FileNotFoundException {
+    public static void fileOut(int step, SlideDirection direction, 
+                                int maxSideLength) throws FileNotFoundException {
         PrintWriter pw = new PrintWriter(new File("test.csv"));
         StringBuilder sb = new StringBuilder();
         NumberGame g;
@@ -93,8 +94,10 @@ public class PerformanceTester {
         
         System.out.println("fileOut beginning: ");
         
-        for (int i = 200; i < 12000; i += step) {
-            g = new NumberGame(i);
+        for (int i = 200; i < maxSideLength; i += step) {
+           // g = new NumberGame(i);
+            g = new NumberGame();
+            g.resizeBoard(i, i, 1024);
             g.setValues(fullBoardGen(i, 2));
             startTime = System.currentTimeMillis();
             g.slide(direction);
@@ -111,6 +114,6 @@ public class PerformanceTester {
     }
     
     public static void main(String[] args) throws FileNotFoundException {
-        PerformanceTester.fileOut(200, SlideDirection.UP);
+        PerformanceTester.fileOut(200, SlideDirection.RIGHT, 6000);
     }
 }
