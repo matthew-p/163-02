@@ -114,6 +114,6 @@ public class PerformanceTester {
     }
     
     public static void main(String[] args) throws FileNotFoundException {
-        PerformanceTester.fileOut(200, SlideDirection.RIGHT, 6000);
+        PerformanceTester.fileOut(200, SlideDirection.UP, 12000);
     }
 }
