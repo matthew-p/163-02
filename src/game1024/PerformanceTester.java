@@ -28,7 +28,9 @@ public class PerformanceTester {
     }
     
     /*******************************************************************
-     * Run a testing loop outputting to the terminal
+     * Run a testing loop outputting to the terminal,
+     * baked in doubling the side length each loop,
+     * sliding vertically 
      * @param args
      ******************************************************************/
     public static void terminalOut() {
@@ -73,7 +75,18 @@ public class PerformanceTester {
      * Run a test loop, outputing to a .CSV file
      * @throws FileNotFoundException 
      */
-    public static void fileOut(int step) throws FileNotFoundException {
+    
+    /**
+     * Runnning a testing loop outputing the result in milliseconds 
+     * to a .CSV file called "test.csv", this is the default for running
+     * the main() method in this class.
+     * @param step the increment to increase the side length each loop 
+     * (square game board)
+     * @param direction right,left,up,down - vertical moves are probably
+     * more time consuming than horizontal moves
+     * @throws FileNotFoundException when it can't find test.csv
+     */
+    public static void fileOut(int step, SlideDirection direction) throws FileNotFoundException {
         PrintWriter pw = new PrintWriter(new File("test.csv"));
         StringBuilder sb = new StringBuilder();
         NumberGame g;
@@ -89,7 +102,7 @@ public class PerformanceTester {
             g = new NumberGame(i);
             g.setValues(fullBoardGen(i, 2));
             startTime = System.currentTimeMillis();
-            g.slide(SlideDirection.RIGHT);
+            g.slide(direction);
             endTime = System.currentTimeMillis();
             d = endTime - startTime; 
             sb.append(i + "," + d + "\n");
@@ -103,6 +116,6 @@ public class PerformanceTester {
     }
     
     public static void main(String[] args) throws FileNotFoundException {
-        PerformanceTester.fileOut(200);
+        PerformanceTester.fileOut(200, SlideDirection.UP);
     }
 }
