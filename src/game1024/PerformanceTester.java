@@ -71,11 +71,6 @@ public class PerformanceTester {
         }
     }
     
-    /*****************************************************************
-     * Run a test loop, outputing to a .CSV file
-     * @throws FileNotFoundException 
-     */
-    
     /**
      * Runnning a testing loop outputing the result in milliseconds 
      * to a .CSV file called "test.csv", this is the default for running
