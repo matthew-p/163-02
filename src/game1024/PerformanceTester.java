@@ -1,5 +1,8 @@
 package game1024;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -25,10 +28,10 @@ public class PerformanceTester {
     }
     
     /*******************************************************************
-     * Run a testing loop
+     * Run a testing loop outputting to the terminal
      * @param args
      ******************************************************************/
-    public static void main(String[] args) {
+    public static void terminalOut() {
         NumberGame g = new NumberGame(10);
         long startTime = 0;
         long endTime = 0;
@@ -64,5 +67,42 @@ public class PerformanceTester {
                 System.out.println(" %\n");
             }
         }
+    }
+    
+    /*****************************************************************
+     * Run a test loop, outputing to a .CSV file
+     * @throws FileNotFoundException 
+     */
+    public static void fileOut(int step) throws FileNotFoundException {
+        PrintWriter pw = new PrintWriter(new File("test.csv"));
+        StringBuilder sb = new StringBuilder();
+        NumberGame g;
+        long startTime = 0;
+        long endTime = 0;
+        long d = 0;
+        
+        sb.append("side length,duration\n");
+        
+        System.out.println("fileOut beginning: ");
+        
+        for (int i = 200; i < 12000; i += step) {
+            g = new NumberGame(i);
+            g.setValues(fullBoardGen(i, 2));
+            startTime = System.currentTimeMillis();
+            g.slide(SlideDirection.RIGHT);
+            endTime = System.currentTimeMillis();
+            d = endTime - startTime; 
+            sb.append(i + "," + d + "\n");
+            
+            System.out.println("finished for side: " + i + " dur: "+ d);
+        }
+        pw.write(sb.toString());
+        pw.close();
+        pw.flush();
+        System.out.println("fileOutput test method finished");
+    }
+    
+    public static void main(String[] args) throws FileNotFoundException {
+        PerformanceTester.fileOut(200);
     }
 }

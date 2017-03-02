@@ -37,6 +37,7 @@ public class TenTwentyFourTester {
         System.out.println("Shutting down Unit Testing");
     }
     
+    // Begin New tests I added: 
     @Test(timeout = 5000) 
     public void UndoShouldRollBackStateWhenUsed() {
         gameLogic.resizeBoard(4, 4, 1024);
@@ -86,7 +87,8 @@ public class TenTwentyFourTester {
         g.setValues(new int[][] {{2,2},{2,2}});
         g.placeRandomValue();
     }
-
+    // end new tests I added
+    
     @Test
     public void resetShouldShowTwoValue()
     {

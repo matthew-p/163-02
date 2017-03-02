@@ -14,12 +14,16 @@ import java.util.Stack;
  * @author Matthew Pische
  */
 public class NumberGame implements NumberSlider {
+
     /** The main Game Board  */
     private int[][] board;
+
     /** the winning value */
     private int winValue;
+ 
     /** current status */
     private GameStatus status;
+ 
     /** game history */
     private Stack<int[][]> undos;
     
@@ -117,6 +121,9 @@ public class NumberGame implements NumberSlider {
                 return new Cell(rnd, rOrCIndex, newCellVal());
             }
         }
+        public boolean isMultiCell() {
+            return max - min > 0 ? true : false;
+        }
     }
     
     /******************************************************************/
@@ -162,6 +169,9 @@ public class NumberGame implements NumberSlider {
     /******************************************************************/
     @Override
     public Cell placeRandomValue() throws IllegalStateException {
+        // build a list of empty cells, to place one within that zone
+        // avoids potentially long run time with random checks in a 
+        // loop when the board is mostly full 
         LinkedList<Cell> empty = getEmptyTiles();
         if (empty.isEmpty()) {
             throw new IllegalStateException();
@@ -221,30 +231,30 @@ public class NumberGame implements NumberSlider {
     
     /******************************************************************/
     @Override
-    public boolean slide(SlideDirection dir) {
-        // NOTE: the behavior of the game seems wrong to me, 
-        // as it will not place a cell in an empty board, or adding
-        // a new cell to empty space doesn't count as a 'change', but 
-        // that appears to be what the given tests demanded 
-        
+    public boolean slide(SlideDirection dir) {        
         // Excessively complicated to avoid re-traversing the board 
-          
+        // when placing a new cell in the empty portion of the board
+        // at the end of the slide
         boolean cng = false;
         
         LinkedList<Empties> emptyRegion = new LinkedList<Empties>();
         
+        // recieves new values, eventually replaces existing board
         int[][] newBoard = new int[board.length][board[0].length];
         
         if (dir == SlideDirection.RIGHT || dir == SlideDirection.LEFT) {
             for (int r = 0; r < board.length; r++) {
+                // holds all values found in this row
                 Queue<Integer> q = new LinkedList<Integer>();
                 
                 if (dir == SlideDirection.RIGHT) {
+                    // walk backwards, adding values to the queue 
                     for (int c = board[r].length - 1; c >= 0; c--) {
                         if (board[r][c] != 0) {
                             q.add(board[r][c]);
                         }
                     }
+                    // helper method to empty the queue & fill new board
                     cng = rowCompact(board[r].length, q, -1, r, cng, 
                                     newBoard, emptyRegion);
                 }
@@ -258,7 +268,7 @@ public class NumberGame implements NumberSlider {
                                     newBoard, emptyRegion);
                 }
             }
-        } else {
+        } else { // not horizontal, must be a column
             for (int c = 0; c < board[0].length; c++) {
                 Queue<Integer> q = new LinkedList<Integer>();
                 if (dir == SlideDirection.UP) {
@@ -281,15 +291,21 @@ public class NumberGame implements NumberSlider {
             }
         }
         
-        if (emptyRegion.size() > 1) {
+        if (emptyRegion.size() > 1 || (
+                emptyRegion.size() == 1 && 
+                emptyRegion.get(0).isMultiCell())) {
             
+            // if there are multiple empty cells, 
+            // get one & place it
             Cell n = emptyRegion.get(
                         (new Random()).nextInt(emptyRegion.size()))
                         .randomCell();
             
             newBoard[n.row][n.column] = n.value;
-        } else if (emptyRegion.size() == 1) {
+        } else if (emptyRegion.size() == 1 && 
+                    !emptyRegion.get(0).isMultiCell()) {
             
+            // if there is only one empty cell, use it
             Cell n = emptyRegion.get(0).randomCell();            
             newBoard[n.row][n.column] = n.value;
             
@@ -331,14 +347,15 @@ public class NumberGame implements NumberSlider {
                                 boolean cng, 
                                 int[][] nBoard, 
                                 LinkedList<Empties> eR) {
-        // yes I know that many parameters is a code smell,
-        // I don't have time to refactor at the moment
+        // yes I know that many parameters is a code smell
         
         int counter = iterator < 0 ? length - 1 : 0;
+        // if row is empty, add to empty region representation
         if (q.isEmpty()) {
             eR.add(new Empties(length - 1, 0, r, true));
         }
 
+        // while there are values in the queue, add them to new board
         while (!q.isEmpty()) {
             int cur = q.remove();
             if (q.isEmpty()) {
@@ -347,6 +364,7 @@ public class NumberGame implements NumberSlider {
                 }
                 nBoard[r][counter] = cur;
 
+                // if new and old board differ, trip changed flag
                 if (nBoard[r][counter] != board[r][counter]) {
                     cng = true;
                 }
@@ -484,6 +502,8 @@ public class NumberGame implements NumberSlider {
     private boolean anyMoves(int[][] b) {
         for (int r = 0; r < b.length; r++) {
             for (int c = 0; c < b[r].length; c++) {
+                
+                // always have a move if empty space left
                 if (b[r][c] == 0) {
                     return true;
                 }
