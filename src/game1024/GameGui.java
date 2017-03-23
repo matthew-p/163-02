@@ -23,7 +23,10 @@ public class GameGui extends JFrame implements ActionListener {
     private int highScr;
     private NumberSlider game;
     private JPanel chromeTopPanel, chromeBottomPanel;
-    private JButton undoButton, resizeButton, resetButton;
+    private JButton undoButton, 
+                    resizeButton, 
+                    resetButton,
+                    exitButton;
     private JTextField widthField, heightField, winValField;
     private JLabel widthLabel, 
                    heightLabel, 
@@ -61,14 +64,6 @@ public class GameGui extends JFrame implements ActionListener {
         chromeTopPanel = new JPanel();
         chromeBottomPanel = new JPanel();
         
-        undoButton = new JButton("Undo");
-        undoButton.addActionListener(this);
-        chromeBottomPanel.add(undoButton);
-        
-        resetButton = new JButton("Reset");
-        resetButton.addActionListener(this);
-        chromeBottomPanel.add(resetButton);
-        
         widthLabel = new JLabel("Columns: ");
         chromeTopPanel.add(widthLabel);
         widthField = new JTextField();
@@ -91,6 +86,14 @@ public class GameGui extends JFrame implements ActionListener {
         resizeButton.addActionListener(this);
         chromeTopPanel.add(resizeButton);
         
+        undoButton = new JButton("Undo");
+        undoButton.addActionListener(this);
+        chromeBottomPanel.add(undoButton);
+        
+        resetButton = new JButton("Reset");
+        resetButton.addActionListener(this);
+        chromeBottomPanel.add(resetButton);        
+        
         totalGamesLabel = new JLabel("Games Played: ");
         totalGamesValLabel = new JLabel(Integer.toString(ttlGames));
         chromeBottomPanel.add(totalGamesLabel);
@@ -100,6 +103,10 @@ public class GameGui extends JFrame implements ActionListener {
         highScoreValLabel = new JLabel(Integer.toString(highScr));
         chromeBottomPanel.add(highScoreLabel);
         chromeBottomPanel.add(highScoreValLabel);
+        
+        exitButton = new JButton("Exit Game");
+        exitButton.addActionListener(this);
+        chromeBottomPanel.add(exitButton);
         
         mainPanel = new Board(rows, cols, 
                             game.getNonEmptyTiles(), winVal);
@@ -248,6 +255,8 @@ public class GameGui extends JFrame implements ActionListener {
                     mainPanel.requestFocusInWindow();
                 }
             }
+        } else if (btn == exitButton) {
+            System.exit(0);
         }
     }
     
