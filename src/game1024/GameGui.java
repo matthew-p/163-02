@@ -1,5 +1,7 @@
 package game1024;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
 import javax.swing.*; 
@@ -36,6 +38,7 @@ public class GameGui extends JFrame {
         game.placeRandomValue();
         game.placeRandomValue();
         mainBoardPanel = new JPanel();
+        
         this.add(mainBoardPanel); 
     }
     
@@ -43,6 +46,41 @@ public class GameGui extends JFrame {
         GameGui gameGui = new GameGui(15, 30); 
      // add it to the JFrame
         Board mainPanel = gameGui.new Board(gameGui.rows, gameGui.cols, gameGui.game.getNonEmptyTiles());
+        mainPanel.setFocusable(true);
+        mainPanel.requestFocusInWindow();
+        mainPanel.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyTyped(KeyEvent e) {}
+
+            @Override
+            public void keyReleased(KeyEvent e) {}
+
+            @Override
+            public void keyPressed(KeyEvent k) {
+                System.out.println("Pressed " + k.getKeyChar());
+                int code = k.getKeyCode();
+                System.out.println("Keypressed code: " + code);
+                if (code == KeyEvent.VK_LEFT) {
+                    System.out.println("slide left");
+                    gameGui.game.slide(SlideDirection.LEFT);
+                    mainPanel.gameBoard = gameGui.game.getNonEmptyTiles();
+                    mainPanel.repaint();
+                } else if (code == KeyEvent.VK_RIGHT) {
+                    gameGui.game.slide(SlideDirection.RIGHT);
+                    mainPanel.gameBoard = gameGui.game.getNonEmptyTiles();
+                    mainPanel.repaint();
+                } else if (code == KeyEvent.VK_UP) {
+                    gameGui.game.slide(SlideDirection.UP);
+                    mainPanel.gameBoard = gameGui.game.getNonEmptyTiles();
+                    mainPanel.repaint();
+                } else if (code == KeyEvent.VK_DOWN) {
+                    gameGui.game.slide(SlideDirection.DOWN);
+                    mainPanel.gameBoard = gameGui.game.getNonEmptyTiles();
+                    mainPanel.repaint();
+                }
+            }
+        });
         gameGui.setSize(SIZE, SIZE); 
         gameGui.getContentPane().add(mainPanel);
       //  gameGui.pack();
@@ -79,6 +117,7 @@ public class GameGui extends JFrame {
         }
         
         public void paintComponent(Graphics g) {
+            super.paintComponent(g);
             width = getWidth();
             height = getHeight();
             if (rows <= cols) {
@@ -95,8 +134,6 @@ public class GameGui extends JFrame {
             g.fillRect(0,0, width, height);
             g.setColor(Color.BLUE);
             g.setFont(FONT);
-            int cIndex = 0;
-            int rIndex = 0;
             for (int y = 0; y < rows; y += 1) {
                 int yStart = y * cellSize;
                 for (int x = 0; x < cols; x += 1) {
@@ -106,18 +143,13 @@ public class GameGui extends JFrame {
                         g.fillRect(xStart, yStart, cellSize, cellSize);
                         g.setColor(Color.YELLOW);
                         centeredString(Integer.toString(b[y][x]), new Rectangle(xStart, yStart, cellSize, cellSize), FONT, g);
-                       // g.drawString(Integer.toString(b[rIndex][cIndex]), x * cellSize, y * cellSize + cellSize / 2);
                     } else {
                         g.setColor(Color.WHITE);
                         g.fillRect(xStart, yStart, cellSize, cellSize);
                         g.setColor(Color.GREEN);
                         centeredString(x + ":" + y, new Rectangle(xStart, yStart, cellSize, cellSize), FONT, g);
-                        //g.drawString((Integer.toString(x) + ":" + y), x * cellSize, y * cellSize + cellSize / 2);
                     }
-                    cIndex++;
                 }
-                cIndex = 0;
-                rIndex++;
             }
         }
     }
